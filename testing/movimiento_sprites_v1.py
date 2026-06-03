@@ -7,7 +7,7 @@ HEIGHT = 480
 pantalla = pygame.display.set_mode((WIDTH, HEIGHT))
 clock = pygame.time.Clock() #controla FPS
 
-VELOCIDAD = 10
+VELOCIDAD = 4
 DELAY_ANIMACIONES=8
 SPRITE_SIZE = (96,96)
 
@@ -16,6 +16,12 @@ def cargar_sprites(ruta):
     imagen =  pygame.image.load(ruta).convert_alpha()
     return pygame.transform.scale(imagen, SPRITE_SIZE)
 
+# Obstaculos:
+obstaculos = [
+    pygame.Rect(100, 100, 64, 64), # x, y, ancho, alto
+    pygame.Rect(300, 200, 96, 96),
+    pygame.Rect(50,  350, 96, 96),
+]
 sprites = {
     "down": [
         cargar_sprites("testing/sprites/L1.png"),
@@ -54,37 +60,65 @@ class Player:
         self.y = float(y)
         self.facing = "down" # direcciOn actual
         self.moving = False
+
+        self.hitbox_offset_x = 24
+        self.hitbox_offset_y = 10
+        self.hitbox_w = 48
+        self.hitbox_h = 88
+        self.hitbox = pygame.Rect(
+            x + self.hitbox_offset_x,
+            y + self.hitbox_offset_y, 
+            self.hitbox_w, 
+            self.hitbox_h)
+
         self.anim_frame = 0 # 0-3 (los 4 frames de movimiento)
         self.anim_timer = 0 # contador para cambiar frame
 
-    def handle_input(self):
+    def handle_input(self, obstaculos):
+        global VELOCIDAD
         keys = pygame.key.get_pressed()
         dx, dy = 0, 0
 
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            if self.y > 0-7:
-                dy = -VELOCIDAD
+            dy = -VELOCIDAD
             self.facing = "up"
         elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            if self.y < (HEIGHT - SPRITE_SIZE[0]):
-                dy = VELOCIDAD
+            dy = VELOCIDAD
             self.facing = "down"
         
         if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            if self.x > 0-22:
-                dx = -VELOCIDAD
+            dx = -VELOCIDAD
             self.facing = "left"
         elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            if self.x < WIDTH-78:
-                dx = VELOCIDAD
+            dx = VELOCIDAD
             self.facing = "right"
 
-        if dx == 0 or dy == 0:
-            self.moving = False
-        else:
-            self.moving = True
-        self.x += dx
-        self.y += dy
+        if keys[pygame.K_f]:
+            VELOCIDAD += 0.1
+
+        # Mover en X y verificar colision
+        self.hitbox.x += dx
+        for obs in obstaculos:
+            if self.hitbox.colliderect(obs):
+                if dx > 0:
+                    self.hitbox.right = obs.left # venia desde la izquierda
+                if dx < 0:
+                    self.hitbox.left = obs.right # venia desde la derecha
+                self.x = float(self.hitbox.x)
+        
+        # Mover en Y y verificar colision
+        self.hitbox.y += dy
+        for obs in obstaculos:
+            if self.hitbox.colliderect(obs):
+                if dy > 0:
+                    self.hitbox.bottom = obs.top # venia desde la arriba
+                if dy < 0:
+                    self.hitbox.top = obs.bottom # venia desde la abajo
+                self.y = float(self.hitbox.y)
+        
+        # La imagen siempre se deriva de la hitbox
+        self.x = float(self.hitbox.x - self.hitbox_offset_x)
+        self.y = float(self.hitbox.y - self.hitbox_offset_y)
 
     def update_animation(self):
         if self.moving == True:
@@ -108,11 +142,8 @@ class Player:
         sprite = self.get_sprite()
         surface.blit(sprite, (int(self.x), int(self.y)))
         
-Rectangulo = pygame.Rect(300,200,96,96)
-
-def dibujar_cuadradito():
-    pygame.draw.rect(pantalla, '#ffffff', Rectangulo)
-
+        pygame.draw.rect(surface, "#18e176", self.hitbox, 2)
+        
 player = Player(WIDTH // 2, HEIGHT // 2)
 
 # Bucle del juego
@@ -122,11 +153,15 @@ while True:
             pygame.quit()
             sys.exit()
     
-    player.handle_input()
+    player.handle_input(obstaculos)
     player.update_animation()
 
     pantalla.fill((30, 30, 30))
+
+    # Dibujar obstaculos
     player.draw(pantalla)
+    for obs in obstaculos:
+        pygame.draw.rect(pantalla, '#f1f1f1', obs)
 
 
     pygame.display.flip()
