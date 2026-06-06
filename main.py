@@ -15,8 +15,9 @@ icono = pygame.image.load("sprites/icono.png")
 pygame.display.set_icon(icono) # Icono ventana
 reloj = pygame.time.Clock()
 
-# escena - testing
+# escena 
 escena_actual = MenuEscena()
+
 
 
 # == BUCLE PRINCIPAL ==
