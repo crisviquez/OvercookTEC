@@ -1,5 +1,6 @@
 import pygame
 from configuracion import *
+from clases.ingrediente import Ingrediente
 
 def cargar_sprites(ruta):
     imagen =  pygame.image.load(ruta).convert_alpha()
@@ -12,6 +13,7 @@ class Chef:
         self.activo = activo
         self.facing = 'down'
         self.moviendose = False
+        self.en_mano = None
         self.sprites = {
     "down": [
         cargar_sprites(f"sprites/Layer 1_sprite_Chef{chef_sprite}01.png"),
@@ -127,6 +129,52 @@ class Chef:
         else:
             return frames[0] # índice 0 es el idle
         
+    def interactuar(self, mapa, despensas, ingredientes_sin_prep, shakers, licuadoras):
+        # posicion actual del chef en el grid
+        cx = self.hitbox.centerx // TILE_SIZE
+        cy = self.hitbox.centery // TILE_SIZE
+
+        # tile q esta al frente
+        if self.facing == 'up':
+            tile_frente = mapa[cy-1][cx]
+        elif self.facing == 'down':
+            tile_frente = mapa[cy+1][cx]
+        elif self.facing == 'left':
+            tile_frente = mapa[cy][cx-1]
+        elif self.facing == 'right':
+            tile_frente = mapa[cy][cx+1]
+
+        if tile_frente in despensas and self.en_mano is None:
+            nombre = despensas[tile_frente]
+            self.en_mano = Ingrediente(nombre, ingredientes_sin_prep)
+
+        # basurero
+        if tile_frente == 't':
+            self.en_mano = None
+
+        # shaker
+        if tile_frente == 'k':
+            for shaker in shakers:
+                sx = shaker.x // TILE_SIZE
+                sy = shaker.y // TILE_SIZE
+                if (cx == sx and abs(cy - sy) == 1) or (cy == sy and abs(cx - sx) == 1):
+                    # Interactua con el shaker
+                    if self.en_mano is not None and shaker.estado != 'mezclando':
+                        shaker.depositar(self.en_mano)
+                        self.en_mano = None
+                    elif self.en_mano is None:
+                        resultado = shaker.recoger()
+                        if resultado is not None:
+                            self.en_mano = resultado 
+        # licuadora
+        if tile_frente == 'l':
+            for licuadora in licuadoras:
+                lx = licuadora.x // TILE_SIZE
+                ly = licuadora.y // TILE_SIZE
+                if (cx == lx and abs(cy - ly) == 1) or (cy == ly and abs(cx - lx) == 1):
+                    licuadora.interactuar(self)
+                    break
+        
     def desactivar(self):
         self.activo = False
         self.moviendose = False
@@ -136,5 +184,10 @@ class Chef:
     def dibujar(self, pantalla):
         self.sprite = self.get_sprite()
         pantalla.blit(self.sprite, (int(self.x), int(self.y)))
+
+        # si tiene algo en mano dibuja encima
+        if self.en_mano is not None:
+            self.en_mano.seguir_chef(self) # el argumento self funciona como el mismo chef (diablo)
+            self.en_mano.dibujar(pantalla)
 
         # pygame.draw.rect(pantalla, "#18e176", self.hitbox, 2)
