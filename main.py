@@ -1,6 +1,6 @@
 import pygame
 import sys
-from configuracion import * 
+from configuracion import *
 from escenas.menu import MenuEscena
 from escenas.nivel1 import Nivel1Escena
 
