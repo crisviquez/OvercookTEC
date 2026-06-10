@@ -29,9 +29,9 @@ class MenuEscena:
             self.timer = 0
 
 
-    def dibujar(self, pantalla, font):
+    def dibujar(self, pantalla, font_grande, font_mediana, font_pequena):
         pantalla.blit(self.fondo, (0,0))
         pygame.draw.rect(pantalla, '#000000',(80, 440,600,60))
-        texto = font.render("Presiona ENTER para jugar", False, "#ffffff")
+        texto = font_grande.render("Presiona ENTER para jugar", False, "#ffffff")
         if self.visible:
             pantalla.blit(texto, (100, 450))
