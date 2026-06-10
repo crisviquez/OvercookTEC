@@ -7,13 +7,15 @@ def cargar_sprites(ruta):
     return pygame.transform.scale(imagen, SPRITE_SIZE)
 
 class Chef:
-    def __init__(self, x, y, activo, chef_sprite):
+    def __init__(self, x, y, activo, chef_sprite, despensas, ingredientes_sin_prep):
         self.x = float(x)
         self.y = float(y)
         self.activo = activo
         self.facing = 'down'
         self.moviendose = False
         self.en_mano = None
+        self.despensas = despensas
+        self.ingredientes_sin_prep = ingredientes_sin_prep
         self.sprites = {
     "down": [
         cargar_sprites(f"sprites/Layer 1_sprite_Chef{chef_sprite}01.png"),
@@ -92,7 +94,7 @@ class Chef:
             if self.hitbox.colliderect(obs):
                 if dx > 0:
                     self.hitbox.right = obs.left # venia desde la izquierda
-                if dx < 0:
+                elif dx < 0:
                     self.hitbox.left = obs.right # venia desde la derecha
                 self.x = float(self.hitbox.x)
         
@@ -114,7 +116,7 @@ class Chef:
     def actualizar_animacion(self):
         if self.moviendose == True:
             self.anim_timer += 1
-            if self.anim_timer >= 8:
+            if self.anim_timer >= DELAY_ANIMACION:
                 self.anim_timer = 0
                 self.anim_frame = (self.anim_frame + 1) % 4
         else:
@@ -129,7 +131,7 @@ class Chef:
         else:
             return frames[0] # índice 0 es el idle
         
-    def interactuar(self, mapa, despensas, ingredientes_sin_prep, shakers, licuadoras):
+    def interactuar(self, mapa, shakers, licuadoras):
         # posicion actual del chef en el grid
         cx = self.hitbox.centerx // TILE_SIZE
         cy = self.hitbox.centery // TILE_SIZE
@@ -144,9 +146,9 @@ class Chef:
         elif self.facing == 'right':
             tile_frente = mapa[cy][cx+1]
 
-        if tile_frente in despensas and self.en_mano is None:
-            nombre = despensas[tile_frente]
-            self.en_mano = Ingrediente(nombre, ingredientes_sin_prep)
+        if tile_frente in self.despensas and self.en_mano is None:
+            nombre = self.despensas[tile_frente]
+            self.en_mano = Ingrediente(nombre, self.ingredientes_sin_prep)
 
         # basurero
         if tile_frente == 't':
