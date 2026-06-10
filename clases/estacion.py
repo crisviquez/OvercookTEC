@@ -32,7 +32,7 @@ class Shaker(Estacion):
         self.estado = 'vacio'
         self.timer_mezcla = 0
         self.resultado = None
-        self.limite = 3
+        self.limite = LIMITE_SHAKER
         self.sprites = {
             'vacio':     cargar_tile("sprites/shaker_normal.png"),
             'cargado':   cargar_tile("sprites/shaker_normal.png"),
@@ -64,7 +64,7 @@ class Shaker(Estacion):
     def actualizar(self, recetas_disponibles):
         if self.estado == 'mezclando':
             self.timer_mezcla += 1
-            if self.timer_mezcla >= 180:  # 180 frames = 3s a 60fps
+            if self.timer_mezcla >= TIEMPO_MEZCLA:  # 180 frames = 3s a 60fps
                 self.estado = 'listo'
                 self.resultado = self.comparar_con_recetas(recetas_disponibles)
 
@@ -100,6 +100,14 @@ class Shaker(Estacion):
         if self.estado == 'listo':
             pantalla.blit(self.resultado.sprite, (self.x + 16, self.y + 8))
 
+        # barra de progreso de mezcla
+        if self.estado == 'mezclando':
+            progreso = self.timer_mezcla / 180
+            ancho_barra = int(TILE_SIZE * progreso)
+            pygame.draw.rect(pantalla, '#333333', (self.x, self.y - 10, TILE_SIZE, 6), border_radius=3)
+            pygame.draw.rect(pantalla, '#44aaff', (self.x, self.y - 10, ancho_barra, 6), border_radius=3)
+
+
 
 
 
@@ -134,7 +142,7 @@ class Licuadora(Estacion):
     def actualizar(self):
         if self.estado == 'procesando':
             self.timer += 1
-            if self.timer >= 180:  # 3 segundos a 60fps
+            if self.timer >= TIEMPO_LICUADO:  # 3 segundos a 60fps
                 self.ingrediente.estado = 'preparado'
                 self.ingrediente.nombre = 'piña licuada'  
                 self.estado = 'lista' # cambia estado del ingrediente
@@ -147,6 +155,13 @@ class Licuadora(Estacion):
         if self.estado in ('procesando', 'lista') and self.ingrediente is not None:
             sprite_ing = self.ingrediente.sprites[self.ingrediente.estado]
             pantalla.blit(sprite_ing, (self.x + 16, self.y + 8))
+
+            # barra de progreso de mezcla
+        if self.estado == 'procesando':
+            progreso = self.timer / 180
+            ancho_barra = int(TILE_SIZE * progreso)
+            pygame.draw.rect(pantalla, '#333333', (self.x, self.y - 10, TILE_SIZE, 6), border_radius=3)
+            pygame.draw.rect(pantalla, '#44aaff', (self.x, self.y - 10, ancho_barra, 6), border_radius=3)
 
 
 
