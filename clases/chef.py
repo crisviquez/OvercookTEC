@@ -176,6 +176,53 @@ class Chef:
                 if (cx == lx and abs(cy - ly) == 1) or (cy == ly and abs(cx - lx) == 1):
                     licuadora.interactuar(self)
                     break
+
+        # horno — mismo tile que shaker pero letra 'c'
+        if tile_frente == 'c':
+            for horno in shakers:  # hornos viven en shakers
+                hx = horno.x // TILE_SIZE
+                hy = horno.y // TILE_SIZE
+                if (cx == hx and abs(cy - hy) == 1) or (cy == hy and abs(cx - hx) == 1):
+                    if self.en_mano is not None and horno.estado != 'horneando':
+                        horno.depositar(self.en_mano)
+                        self.en_mano = None
+                    elif self.en_mano is None:
+                        resultado = horno.recoger()
+                        if resultado is not None:
+                            self.en_mano = resultado
+
+        # mesa cocina — mismo tile que licuadora pero letra 'm'
+        if tile_frente == 'm':
+            for mesa in licuadoras:  # mesas viven en licuadoras
+                mx = mesa.x // TILE_SIZE
+                my = mesa.y // TILE_SIZE
+                if (cx == mx and abs(cy - my) == 1) or (cy == my and abs(cx - mx) == 1):
+                    mesa.interactuar(self)
+                    break
+        
+        # olla arrocera y tabla de picar — tile 'o' y 'z'
+        if tile_frente in ('o', 'z'):
+            for procesadora in licuadoras:  # viven en licuadoras
+                px = procesadora.x // TILE_SIZE
+                py = procesadora.y // TILE_SIZE
+                if (cx == px and abs(cy - py) == 1) or (cy == py and abs(cx - px) == 1):
+                    procesadora.interactuar(self)
+                    break
+
+        # cocina de leña — tile 'v'
+        if tile_frente == 'v':
+            for cocina in shakers:  # viven en shakers
+                kx = cocina.x // TILE_SIZE
+                ky = cocina.y // TILE_SIZE
+                if (cx == kx and abs(cy - ky) == 1) or (cy == ky and abs(cx - kx) == 1):
+                    if self.en_mano is not None and cocina.estado != 'cocinando':
+                        cocina.depositar(self.en_mano)
+                        self.en_mano = None
+                    elif self.en_mano is None:
+                        resultado = cocina.recoger()
+                        if resultado is not None:
+                            self.en_mano = resultado
+                    break
         
     def desactivar(self):
         self.activo = False
