@@ -6,8 +6,8 @@ from clases.receta import Receta
 class Cocina:
     def __init__(self, chefs, shakers, licuadoras, barras, recetas_posibles, tiempo_total):
         self.chefs = chefs
-        self.shakers = shakers 
-        self.licuadoras = licuadoras
+        self.shakers = shakers # nivel1=shakers,  nivel2=hornos
+        self.licuadoras = licuadoras # nivel1=licuadoras, nivel2=mesas
         self.barras = barras
         self.recetas_posibles = recetas_posibles
 
@@ -20,7 +20,7 @@ class Cocina:
 
         #generador de recetas
         self.timer_receta = 0
-        self.intervalo_receta = random.randint(INTERVALO_RECETA_MIN,INTERVALO_RECETA_MAX) * 60 # 10-20
+        self.intervalo_receta = random.randint(INTERVALO_RECETA_MIN,INTERVALO_RECETA_MAX) * 60
         self.primer_receta_timer = PRIMERA_RECETA_DELAY * 60 # primera receta a als 5s
         self.primer_receta_generada = False
 
@@ -113,24 +113,25 @@ class Cocina:
     def dibujar_hud(self, pantalla, font_grande, font_mediana, font_pequena, nombre_nivel):
         #fondo
         pygame.draw.rect(pantalla, '#1a1a2e', (0,0, WIDTH, TILE_SIZE))
+        pygame.draw.rect(pantalla, "#1a1a2e", (48*16,48, 48*6, 48*11))
 
         # tARJETAS DE RECETAS
-        ancho_tarjeta = 95
-        alto_tarjeta = 140
-        margen = 6
+        ancho_tarjeta = TILE_SIZE * 5 - 12
+        alto_tarjeta = TILE_SIZE * 3
+        margen_x = 6 + 768
+        margen_y = TILE_SIZE * 2 + 12
 
         # recetas activas
         for i, receta in enumerate(self.ordenes):
-            x = margen + i * (ancho_tarjeta + margen)
-            y = 2
+            x = margen_x
+            y = margen_y + i * (alto_tarjeta + (margen_y - TILE_SIZE) - 48)
             
             # fondo tarjeta
             pygame.draw.rect(pantalla, '#2e2e4e', (x, y, ancho_tarjeta, alto_tarjeta), border_radius=6)
             pygame.draw.rect(pantalla, '#5555aa', (x, y, ancho_tarjeta, alto_tarjeta), 2, border_radius=6)
 
             # sprite de la receta
-            sprite_escalado = pygame.transform.scale(receta.sprite, (16,32))
-            pantalla.blit(sprite_escalado, (x + (ancho_tarjeta / 2) - 8, y + 24))
+            pantalla.blit(receta.sprite, (x + (ancho_tarjeta / 2) - (receta.sprite.get_width()// 2), y + 24))
 
             # nombre receta
             texto_nombre = font_mediana.render(receta.nombre, False, '#ffffff')
@@ -139,7 +140,10 @@ class Cocina:
             # ingredientes
             for j, ing in enumerate(receta.ingredientes):
                 texto_ing = font_pequena.render(f'• {ing}', False, '#aaaacc')
-                pantalla.blit(texto_ing, (x + 4, y + 62 + j * 14))
+                if j >= 3:
+                    pantalla.blit(texto_ing, (x + 4 + (ancho_tarjeta // 2), y + 62 + (j - 3) * 14))
+                else:
+                    pantalla.blit(texto_ing, (x + 4, y + 62 + j * 14))
 
             # puntos
             texto_pts = font_pequena.render(f'{receta.puntos}pts', False, '#ffd700')
@@ -163,7 +167,11 @@ class Cocina:
 
         # nombre nivel
         texto_nivel = font_grande.render(nombre_nivel, False, '#ffffff')
-        pantalla.blit(texto_nivel, (WIDTH // 2 - texto_nivel.get_width() // 2, 8))
+        pantalla.blit(texto_nivel, (8, 8)) #(WIDTH // 2) - (texto_nivel.get_width() // 2)
+
+        # texto recetas 
+        texto_recetas = font_grande.render('RECETAS', False, '#ffffff')
+        pantalla.blit(texto_recetas, (TILE_SIZE * 17 + (TILE_SIZE//2) - 24 ,8 + TILE_SIZE))
 
         # tiempo
         minutos = self.tiempo_restante // 60 // 60
@@ -173,11 +181,12 @@ class Cocina:
         else:
             color_tiempo = '#ff4444'
         texto_tiempo = font_grande.render(f'{minutos:02}:{segundos:02}', False, color_tiempo)
-        pantalla.blit(texto_tiempo, (WIDTH - 220, 8))
+        pantalla.blit(texto_tiempo, ((WIDTH // 2) - (texto_nivel.get_width() // 2), 8))
 
         # puntos
-        texto_puntos = font_grande.render(str(self.puntos), False, '#ffd700')
-        pantalla.blit(texto_puntos, (WIDTH - 80, 8))
+        texto_pts = 'Puntos: ' + str(self.puntos)
+        texto_puntos = font_grande.render(texto_pts, False, '#ffd700')
+        pantalla.blit(texto_puntos, (WIDTH - 200, 8))
 
     def dibujar(self, pantalla):
         for chef in self.chefs:
