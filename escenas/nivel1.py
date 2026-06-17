@@ -66,6 +66,30 @@ def dibujar_mapa(surface, mapa, sprites_tiles):
             if celda in sprites_tiles and celda != '.':
                 surface.blit(sprites_tiles[celda], rect)
 
+def cargar_estaciones(mapa, TILE_SIZE):
+    estaciones = {
+        "l": [],  # licuadoras
+        "k": [],  # shakers
+        "b": [],  # barras
+    }
+
+    for fila, linea in enumerate(mapa):
+        for columna, celda in enumerate(linea):
+
+            x = columna * TILE_SIZE
+            y = fila * TILE_SIZE
+
+            if celda == "l":
+                estaciones["l"].append(Licuadora(x, y))
+
+            elif celda == "k":
+                estaciones["k"].append(Shaker(x, y))
+
+            elif celda == "b":
+                estaciones["b"].append(Barra(x, y))
+
+    return estaciones
+
 class Nivel1Escena:
     def __init__(self):
         self.siguiente_estado = None
@@ -94,24 +118,10 @@ class Nivel1Escena:
         ]
 
         # estaciones
-        shakers = [
-            Shaker(6 * TILE_SIZE, 6 * TILE_SIZE),
-            Shaker(8 * TILE_SIZE, 6 * TILE_SIZE),
-        ]
-        licuadoras = [
-            Licuadora(6 * TILE_SIZE, 4 * TILE_SIZE),
-            Licuadora(8 * TILE_SIZE, 4 * TILE_SIZE),
-        ]
-        barras = [
-                  Barra(1 * TILE_SIZE, 2 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 3 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 4 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 5 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 6 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 7 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 8 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 9 * TILE_SIZE),
-                  Barra(1 * TILE_SIZE, 10 * TILE_SIZE)]
+        estaciones = cargar_estaciones(mapa, TILE_SIZE)
+        shakers = estaciones['k']
+        licuadoras = estaciones['l']
+        barras = estaciones['b']
 
 
 
