@@ -4,6 +4,9 @@ from configuracion import *
 from escenas.menu import MenuEscena
 from escenas.nivel1 import Nivel1Escena
 from escenas.resultados import ResultadosEscena
+from escenas.nivel2 import Nivel2Escena
+from escenas.nivel3 import Nivel3Escena
+from escenas.pantalla_final import PantallaFinalEscena
 
 # == Inicializacion ==
 pygame.init()
@@ -40,15 +43,37 @@ while ejecutando:
     escena_actual.dibujar(pantalla, FONT_GRANDE, FONT_MEDIANA, FONT_PEQUENA)
 
     if escena_actual.siguiente_estado == 'Jugando':
+        puntos_nivel1 = 0   # reset al empezar de nuevo
+        puntos_nivel2 = 0
+        puntos_nivel3 = 0
         escena_actual = Nivel1Escena()
+
     elif escena_actual.siguiente_estado == 'Nivel1':
-        escena_actual = ResultadosEscena(escena_actual.cocina.puntos)
-    #elif escena_actual.siguente_estado == 'Nivel2':
-        #escena_actual = Nivel2Escena()
+        puntos_nivel1 = escena_actual.cocina.puntos
+        escena_actual = ResultadosEscena(escena_actual.cocina.puntos, 'Nivel2')
+
+    elif escena_actual.siguiente_estado == 'Nivel2':
+        escena_actual = Nivel2Escena()
+
+    elif escena_actual.siguiente_estado == 'Resultados2':
+        puntos_nivel2 = escena_actual.cocina.puntos
+        escena_actual = ResultadosEscena(escena_actual.cocina.puntos, 'Nivel3')
+
+    elif escena_actual.siguiente_estado == 'Nivel3':
+        escena_actual = Nivel3Escena()
+
     elif escena_actual.siguiente_estado == 'Menu':
         escena_actual = MenuEscena()
 
+    elif escena_actual.siguiente_estado == 'Resultados3':
+        puntos_nivel3 = escena_actual.cocina.puntos
+        escena_actual = ResultadosEscena(escena_actual.cocina.puntos, 'PantallaFinal')
+
+    elif escena_actual.siguiente_estado == 'PantallaFinal':
+        escena_actual = PantallaFinalEscena(puntos_nivel1, puntos_nivel2, puntos_nivel3)
+
     
+
     # == Actualizar Pantalla
     pygame.display.flip()
     reloj.tick(60) # 60fps
@@ -56,3 +81,4 @@ while ejecutando:
 
 pygame.quit()
 sys.exit()
+
