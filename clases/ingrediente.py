@@ -42,9 +42,14 @@ class Ingrediente:
 class Desecho:
     def __init__(self):
         self.nombre = 'desecho'
+        self.estado = 'normal'
         self.x = 0
         self.y = 0
         self.sprite = cargar_sprite("sprites/ing_desecho.png")
+
+        self.sprites = {
+            'normal': self.sprite
+        }
 
     def seguir_chef(self, chef):
         self.x = chef.hitbox.centerx - 8
