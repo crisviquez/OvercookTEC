@@ -6,6 +6,7 @@ class MenuEscena:
     def __init__(self):
         self.siguiente_estado = None # no quiero cambiar de escena
         self.fondo = pygame.image.load('sprites/fondo_menu.png').convert()
+        self.fondo = pygame.transform.scale(self.fondo, (WIDTH, HEIGHT))
         self.visible = True
         self.timer = 0
 
@@ -20,6 +21,10 @@ class MenuEscena:
             if evento.key == pygame.K_RETURN:
                 pygame.mixer.music.stop() # parar musica
                 self.siguiente_estado = 'Jugando' # cambiar estado
+            if evento.key == pygame.K_9:
+                self.siguiente_estado = 'Nivel2'
+            if evento.key == pygame.K_8:
+                self.siguiente_estado = 'Nivel3'
 
     def actualizar(self):
         # Efecto parpadeo
@@ -31,7 +36,7 @@ class MenuEscena:
 
     def dibujar(self, pantalla, font_grande, font_mediana, font_pequena):
         pantalla.blit(self.fondo, (0,0))
-        pygame.draw.rect(pantalla, '#000000',(80, 440,600,60))
+        pygame.draw.rect(pantalla, '#000000',(80, 440,850,60))
         texto = font_grande.render("Presiona ENTER para jugar", False, "#ffffff")
         if self.visible:
-            pantalla.blit(texto, (100, 450))
+            pantalla.blit(texto, (300, 450))
